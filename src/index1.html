@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Velha - UNIFOR</title>
+    <style>
+        /* =========================================
+           Variáveis e Identidade Visual (UNIFOR)
+           ========================================= */
+        :root {
+            --azul-unifor: #003366;
+            --azul-destaque: #0056b3;
+            --laranja-unifor: #d97706;
+            --fundo: #f4f6f9;
+            --branco: #ffffff;
+            --borda: #cccccc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--fundo);
+            color: var(--azul-unifor);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* =========================================
+           Cabeçalho
+           ========================================= */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            color: var(--azul-destaque);
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        h1 {
+            color: var(--azul-unifor);
+            font-size: 32px;
+            text-transform: uppercase;
+        }
+
+        /* =========================================
+           Controles e Placar
+           ========================================= */
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        select, button {
+            padding: 10px 15px;
+            font-size: 14px;
+            border: 1px solid var(--borda);
+            border-radius: 5px;
+            background-color: var(--branco);
+            cursor: pointer;
+            outline: none;
+            color: var(--azul-unifor);
+            font-weight: bold;
+        }
+
+        .scoreboard {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+            background: var(--branco);
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+        }
+
+        .score-box {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .score-box.x { color: var(--azul-destaque); }
+        .score-box.o { color: var(--laranja-unifor); }
+        
+        .score-value {
+            font-size: 24px;
+            margin-top: 5px;
+        }
+
+        .round-info {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .status {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            height: 24px;
+        }
+
+        /* =========================================
+           Tabuleiro e Células
+           ========================================= */
+        .board-container {
+            margin-bottom: 20px;
+        }
+
+        .board {
+            position: relative; 
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            background-color: var(--azul-unifor);
+            padding: 5px;
+            border-radius: 8px;
+        }
+
+        .cell {
+            background-color: var(--fundo);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 48px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .cell:hover {
+            background-color: var(--branco);
+        }
+
+        .cell.x { color: var(--azul-destaque); }
+        .cell.o { color: var(--laranja-unifor); }
+
+        .win-line {
+            position: absolute;
+            background-color: var(--laranja-unifor);
+            height: 8px;
+            border-radius: 4px;
+            transform-origin: left center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* =========================================
+           Botão Reiniciar e Confetes
+           ========================================= */
+        #restartBtn {
+            background-color: var(--azul-unifor);
+            color: var(--branco);
+            border: none;
+            padding: 12px 24px;
+            text-transform: uppercase;
+            transition: background-color 0.3s;
+        }
+
+        #restartBtn:hover {
+            background-color: var(--azul-destaque);
+        }
+
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- UI-01 e UI-02: Cabeçalho Institucional -->
+    <div class="header">
+        <div class="subtitle">Universidade de Fortaleza</div>
+        <h1>Jogo da Velha</h1>
+    </div>
+
+    <!-- UI-03 e UI-04: Controles -->
+    <div class="controls">
+        <select id="modeSelect">
+            <option value="pvp">2 Jogadores (PVP)</option>
+            <option value="cpu">Contra o Computador</option>
+        </select>
+        <select id="formatSelect">
+            <option value="single">Partida Única</option>
+            <option value="bo3">Melhor de 3 (MD3)</option>
+        </select>
+    </div>
+
+    <!-- UI-05, UI-06 e UI-07: Placar -->
+    <div class="scoreboard">
+        <div class="score-box x">
+            <div>JOGADOR X</div>
+            <div class="score-value" id="scoreX">0</div>
+        </div>
+        <div class="round-info">
+            <div>Rodada</div>
+            <div id="roundDisplay" style="font-size: 16px; font-weight: bold; margin-top: 5px;">1/1</div>
+        </div>
+        <div class="score-box o">
+            <div id="labelO">JOGADOR O</div>
+            <div class="score-value" id="scoreO">0</div>
+        </div>
+    </div>
+
+    <!-- UI-08: Status do Jogo -->
+    <div class="status" id="statusMessage">Vez do Jogador X</div>
+
+    <!-- UI-09 e UI-10: Tabuleiro e Linha de Vitória -->
+    <div class="board-container">
+        <div class="board" id="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+            <div class="win-line" id="winLine"></div>
+        </div>
+    </div>
+
+    <!-- UI-11: Botão Reiniciar -->
+    <button id="restartBtn">Reiniciar Jogo</button>
+
+    <!-- Canvas para Confetes -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <script>
+        /* =========================================
+           Dicionário de Dados e Estrutura de Estado
+           ========================================= */
+        let options = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'X';
+        let running = false;
+        let winsX = 0;
+        let winsO = 0;
+        let currentRound = 1;
+        
+        const winPatterns = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Linhas
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Colunas
+            [0, 4, 8], [2, 4, 6]             // Diagonais
+        ];
+
+        /* =========================================
+           Elementos da Interface
+           ========================================= */
+        const cells = document.querySelectorAll('.cell');
+        const statusText = document.getElementById('statusMessage');
+        const restartBtn = document.getElementById('restartBtn');
+        const modeSelect = document.getElementById('modeSelect');
+        const formatSelect = document.getElementById('formatSelect');
+        const scoreXText = document.getElementById('scoreX');
+        const scoreOText = document.getElementById('scoreO');
+        const labelO = document.getElementById('labelO');
+        const roundDisplay = document.getElementById('roundDisplay');
+        const winLine = document.getElementById('winLine');
+        const board = document.getElementById('board');
+
+        /* =========================================
+           Web Audio API
+           ========================================= */
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playTone(frequency, type, duration, vol = 0.1) {
+            if (!audioCtx) return;
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.type = type;
+            oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+            
+            gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+
+        function playSoundX() { playTone(600, 'sine', 0.15); }
+        function playSoundO() { playTone(400, 'sine', 0.15); }
+        function playSoundWin() {
+            playTone(523.25, 'triangle', 0.2); // C5
+            setTimeout(() => playTone(659.25, 'triangle', 0.2), 100); // E5
+            setTimeout(() => playTone(783.99, 'triangle', 0.4), 200); // G5
+        }
+        function playSoundDraw() {
+            playTone(300, 'sawtooth', 0.3);
+            setTimeout(() => playTone(250, 'sawtooth', 0.4), 250);
+        }
+
+        /* =========================================
+           Sistema de Confetes (Ajustado: Menos volume e mais lateral)
+           ========================================= */
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particles = [];
+        let animationId;
+
+        function fireConfetti() {
+            const colors = ['#003366', '#0056b3', '#d97706', '#ffffff'];
+            // Quantidade reduzida para 200
+            for (let i = 0; i < 200; i++) {
+                particles.push({
+                    // Nasce um pouco mais espalhado horizontalmente no centro
+                    x: canvas.width / 2 + (Math.random() * 200 - 100), 
+                    y: canvas.height / 2,
+                    r: Math.random() * 6 + 2,
+                    // dx define o espalhamento lateral: agora espalha muito mais para os lados
+                    dx: Math.random() * 26 - 13,   
+                    // dy define a explosão para cima (maior alcance)
+                    dy: Math.random() * -16 - 4,  
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.floor(Math.random() * 10) - 10,
+                    tiltAngleInc: (Math.random() * 0.05) + 0.02,
+                    tiltAngle: 0
+                });
+            }
+            if (!animationId) animateConfetti();
+        }
+
+        function animateConfetti() {
+            animationId = requestAnimationFrame(animateConfetti);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, index) => {
+                p.tiltAngle += p.tiltAngleInc;
+                p.x += Math.sin(p.tiltAngle) * 1.5; 
+                p.x += p.dx; // Adiciona a força lateral constantemente (resistência do ar simula espalhamento)
+                p.dx *= 0.95; // Desacelera o movimento horizontal para suavizar
+                p.dy += 0.06; // Gravidade
+                p.y += p.dy;
+
+                ctx.beginPath();
+                ctx.lineWidth = p.r;
+                ctx.strokeStyle = p.color;
+                ctx.moveTo(p.x + p.tilt + p.r, p.y);
+                ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+                ctx.stroke();
+
+                if (p.y > canvas.height) particles.splice(index, 1);
+            });
+
+            if (particles.length === 0 && animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        /* =========================================
+           Lógica Principal do Jogo
+           ========================================= */
+        function initializeGame() {
+            cells.forEach(cell => cell.addEventListener('click', cellClicked));
+            restartBtn.addEventListener('click', restartGame);
+            modeSelect.addEventListener('change', updateSettings);
+            formatSelect.addEventListener('change', updateSettings);
+            updateRoundDisplay();
+            running = true;
+        }
+
+        function updateSettings() {
+            labelO.textContent = modeSelect.value === 'cpu' ? 'COMPUTADOR' : 'JOGADOR O';
+            restartGame();
+        }
+
+        function cellClicked(e) {
+            initAudio(); 
+            const cell = e.target;
+            const cellIndex = cell.getAttribute('data-index');
+
+            if (options[cellIndex] !== '' || !running) return;
+
+            updateCell(cell, cellIndex);
+            checkWinner();
+
+            if (running && modeSelect.value === 'cpu' && currentPlayer === 'O') {
+                running = false; 
+                statusText.textContent = "Computador pensando...";
+                setTimeout(() => {
+                    cpuPlay();
+                }, 400);
+            }
+        }
+
+        function cpuPlay() {
+            let available = [];
+            options.forEach((val, index) => { if (val === '') available.push(index); });
+            
+            if (available.length > 0) {
+                const randomIndex = available[Math.floor(Math.random() * available.length)];
+                const cell = document.querySelector(`.cell[data-index="${randomIndex}"]`);
+                
+                running = true; 
+                
+                updateCell(cell, randomIndex);
+                checkWinner();
+            }
+        }
+
+        function updateCell(cell, index) {
+            options[index] = currentPlayer;
+            cell.textContent = currentPlayer;
+            cell.classList.add(currentPlayer.toLowerCase());
+            
+            if (currentPlayer === 'X') playSoundX();
+            else playSoundO();
+        }
+
+        function changePlayer() {
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            statusText.textContent = `Vez do ${currentPlayer === 'X' ? 'Jogador X' : (modeSelect.value === 'cpu' ? 'Computador' : 'Jogador O')}`;
+        }
+
+        function checkWinner() {
+            let roundWon = false;
+            let winningPattern = null;
+
+            for (let i = 0; i < winPatterns.length; i++) {
+                const condition = winPatterns[i];
+                const cellA = options[condition[0]];
+                const cellB = options[condition[1]];
+                const cellC = options[condition[2]];
+
+                if (cellA === '' || cellB === '' || cellC === '') continue;
+                if (cellA === cellB && cellB === cellC) {
+                    roundWon = true;
+                    winningPattern = condition;
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                handleWin(winningPattern);
+            } else if (!options.includes('')) {
+                handleDraw();
+            } else {
+                changePlayer();
+            }
+        }
+
+        /* =========================================
+           Conclusão de Rodada / Partida
+           ========================================= */
+        function drawLine(pattern) {
+            const startCell = cells[pattern[0]];
+            const endCell = cells[pattern[2]];
+
+            const x1 = startCell.offsetLeft + startCell.offsetWidth / 2;
+            const y1 = startCell.offsetTop + startCell.offsetHeight / 2;
+            const x2 = endCell.offsetLeft + endCell.offsetWidth / 2;
+            const y2 = endCell.offsetTop + endCell.offsetHeight / 2;
+
+            const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+            winLine.style.width = `${length}px`;
+            winLine.style.transform = `translate(${x1}px, ${y1 - 4}px) rotate(${angle}deg)`;
+            winLine.style.opacity = '1';
+        }
+
+        function handleWin(pattern) {
+            running = false;
+            drawLine(pattern);
+            playSoundWin();
+            fireConfetti();
+
+            if (currentPlayer === 'X') {
+                winsX++;
+                scoreXText.textContent = winsX;
+            } else {
+                winsO++;
+                scoreOText.textContent = winsO;
+            }
+
+            statusText.textContent = `${currentPlayer === 'X' ? 'Jogador X' : (modeSelect.value === 'cpu' ? 'Computador' : 'Jogador O')} Venceu a Rodada!`;
+
+            checkMatchEnd();
+        }
+
+        function handleDraw() {
+            running = false;
+            playSoundDraw();
+            statusText.textContent = "Rodada Empatada!";
+            checkMatchEnd(true);
+        }
+
+        function checkMatchEnd(isDraw = false) {
+            const format = formatSelect.value;
+
+            if (format === 'bo3') {
+                if (winsX === 2 || winsO === 2) {
+                    const champion = winsX === 2 ? 'Jogador X' : (modeSelect.value === 'cpu' ? 'Computador' : 'Jogador O');
+                    statusText.textContent = `🏆 CAMPEÃO DEFINITIVO: ${champion}! 🏆`;
+                } else if (currentRound < 3) {
+                    setTimeout(() => {
+                        if (!isDraw) currentRound++;
+                        resetBoard();
+                    }, 2000);
+                } else {
+                    let finalStatus = "Partida Encerrada - Empate Final!";
+                    if (winsX > winsO) finalStatus = "🏆 CAMPEÃO: Jogador X! 🏆";
+                    if (winsO > winsX) finalStatus = `🏆 CAMPEÃO: ${modeSelect.value === 'cpu' ? 'Computador' : 'Jogador O'}! 🏆`;
+                    statusText.textContent = finalStatus;
+                }
+            } else {
+                // Partida única aguarda reinício manual
+            }
+            updateRoundDisplay();
+        }
+
+        function updateRoundDisplay() {
+            if (formatSelect.value === 'single') {
+                roundDisplay.textContent = '1/1';
+            } else {
+                roundDisplay.textContent = `${Math.min(currentRound, 3)}/3`;
+            }
+        }
+
+        function resetBoard() {
+            options = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            statusText.textContent = "Vez do Jogador X";
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('x', 'o');
+            });
+            winLine.style.opacity = '0';
+            running = true;
+        }
+
+        function restartGame() {
+            winsX = 0;
+            winsO = 0;
+            currentRound = 1;
+            scoreXText.textContent = winsX;
+            scoreOText.textContent = winsO;
+            
+            particles = []; 
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            updateRoundDisplay();
+            resetBoard();
+        }
+
+        // Inicia o Jogo
+        initializeGame();
+    </script>
+</body>
+</html>
