@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jogo da Velha · Universidade de Fortaleza</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --azul:#003366;         /* RNF: Azul institucional */
+    --azul-destaque:#0056b3;/* RNF: Azul Destaque */
+    --laranja:#d97706;      /* RNF: Laranja */
+    --fundo:#f4f6f9;        /* RNF: Fundo */
+    --vitoria:#16a34a;      /* cor da linha vitoriosa */
+    --white:#ffffff;
+    --ink:#152438;
+    --ink-soft:#5b6b80;
+    --border:#dfe6ee;
+    --radius:14px;
+    --shadow:0 16px 36px -18px rgba(0,51,102,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:var(--fundo);
+    font-family:'Inter',-apple-system,sans-serif;
+    color:var(--ink);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:0 16px 50px;
+  }
+
+  /* ---------- Cabeçalho institucional ---------- */
+  header{
+    width:100%;
+    background:linear-gradient(135deg,var(--azul),var(--azul-destaque));
+    color:var(--white);
+    text-align:center;
+    padding:28px 16px 34px;
+    margin-bottom:-18px;
+    border-radius:0 0 22px 22px;
+    box-shadow:var(--shadow);
+  }
+  header .subtitulo{
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    color:#cfe1f7;
+    margin:0 0 6px;
+  }
+  header h1{
+    margin:0;
+    font-family:'Sora',sans-serif;
+    font-weight:800;
+    font-size:clamp(24px,6vw,34px);
+    letter-spacing:1px;
+    text-transform:uppercase;
+  }
+
+  main{
+    width:100%;
+    max-width:520px;
+    margin-top:36px;
+  }
+
+  .card{
+    background:var(--white);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    border:1px solid var(--border);
+    padding:24px;
+  }
+
+  /* ---------- UI-03 / UI-04 Seletores ---------- */
+  .selectors{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+  }
+  .select-field{flex:1;}
+  .select-field label{
+    display:block;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .select-field select{
+    width:100%;
+    padding:10px 10px;
+    border-radius:10px;
+    border:1.5px solid var(--border);
+    background:var(--fundo);
+    color:var(--azul);
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    cursor:pointer;
+  }
+  .select-field select:focus-visible{outline:2.5px solid var(--azul-destaque);}
+
+  /* ---------- UI-05 / UI-06 / UI-07 Placar ---------- */
+  .scoreboard{
+    display:flex;
+    align-items:center;
+    border:1.5px solid var(--border);
+    border-radius:12px;
+    overflow:hidden;
+    margin-bottom:18px;
+  }
+  .scoreboard > div{
+    flex:1;
+    text-align:center;
+    padding:12px 6px;
+  }
+  .scoreboard .jx{background:#eaf1fa;}
+  .scoreboard .rodada{background:var(--white);border-left:1.5px solid var(--border);border-right:1.5px solid var(--border);}
+  .scoreboard .jo{background:#fdf1e2;}
+  .scoreboard .rotulo{
+    font-size:10.5px;
+    font-weight:700;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .scoreboard .valor{
+    font-family:'Sora',sans-serif;
+    font-weight:800;
+    font-size:22px;
+    margin-top:2px;
+  }
+  .scoreboard .jx .valor{color:var(--azul);}
+  .scoreboard .jo .valor{color:var(--laranja);}
+  .scoreboard .rodada .valor{color:var(--ink);font-size:16px;}
+
+  /* ---------- UI-08 Status ---------- */
+  #status{
+    text-align:center;
+    font-family:'Sora',sans-serif;
+    font-weight:700;
+    font-size:16px;
+    color:var(--azul);
+    min-height:22px;
+    margin-bottom:16px;
+  }
+  #status.venceu{color:var(--vitoria);}
+  #status.empate{color:var(--ink-soft);}
+
+  /* ---------- UI-09 Tabuleiro / UI-10 Linha ---------- */
+  .board-wrap{
+    position:relative;
+    width:min(320px,80vw);
+    aspect-ratio:1/1;
+    margin:0 auto;
+  }
+  #board{
+    position:absolute;inset:0;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-template-rows:repeat(3,1fr);
+    gap:7px;
+    background:var(--azul);
+    padding:7px;
+    border-radius:12px;
+    box-shadow:var(--shadow);
+  }
+  #board.bloqueado .celula.vazia{cursor:not-allowed;}
+  #board.pensando{pointer-events:none;}
+
+  .celula{
+    background:var(--white);
+    border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Sora',sans-serif;
+    font-weight:800;
+    font-size:clamp(32px,9vw,42px);
+    cursor:pointer;
+    user-select:none;
+    transition:background .15s ease;
+  }
+  .celula.vazia:hover{background:#eef4fb;}
+  .celula:focus-visible{outline:3px solid var(--azul-destaque);outline-offset:-3px;}
+  .celula.x{color:var(--azul);}
+  .celula.o{color:var(--laranja);}
+  .celula span{display:inline-block;animation:pop .2s cubic-bezier(.2,1.4,.5,1) both;}
+  .celula.vencedora{background:#eafaf0;}
+  @keyframes pop{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+  .linha-vitoria{
+    position:absolute;
+    height:7px;
+    border-radius:6px;
+    background:var(--vitoria);
+    box-shadow:0 0 10px rgba(22,163,74,.75);
+    transform-origin:left center;
+    left:0;top:0;
+    transform:scaleX(0);
+    transition:transform .32s cubic-bezier(.3,1,.4,1);
+    pointer-events:none;
+  }
+  .linha-vitoria.show{transform:scaleX(1);}
+
+  /* ---------- UI-11 Botão Reiniciar ---------- */
+  #btnReiniciar{
+    display:block;
+    width:100%;
+    margin-top:22px;
+    padding:13px;
+    border:none;
+    border-radius:11px;
+    background:linear-gradient(135deg,var(--azul-destaque),var(--azul));
+    color:var(--white);
+    font-family:'Sora',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:transform .12s ease;
+  }
+  #btnReiniciar:hover{transform:translateY(-1px);}
+  #btnReiniciar:active{transform:translateY(0);}
+
+  footer{
+    margin-top:20px;
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:12px;
+  }
+
+  #confettiCanvas{
+    position:fixed;inset:0;
+    width:100vw;height:100vh;
+    pointer-events:none;
+    z-index:999;
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .celula span, .linha-vitoria{animation:none !important;transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <p class="subtitulo">Universidade de Fortaleza</p>
+    <h1>Jogo da Velha</h1>
+  </header>
+
+  <main>
+    <div class="card">
+
+      <!-- UI-03 / UI-04 -->
+      <div class="selectors">
+        <div class="select-field">
+          <label for="modeSelect">Modo de Jogo</label>
+          <select id="modeSelect">
+            <option value="pvp">2 Jogadores (PVP)</option>
+            <option value="cpu">Contra o Computador</option>
+          </select>
+        </div>
+        <div class="select-field">
+          <label for="formatSelect">Formato da Partida</label>
+          <select id="formatSelect">
+            <option value="single">Partida Única</option>
+            <option value="bo3">Melhor de 3 (MD3)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- UI-05 / UI-06 / UI-07 -->
+      <div class="scoreboard">
+        <div class="jx">
+          <div class="rotulo">Jogador X</div>
+          <div class="valor" id="scoreX">0</div>
+        </div>
+        <div class="rodada">
+          <div class="rotulo">Rodada</div>
+          <div class="valor" id="roundLabel">1/1</div>
+        </div>
+        <div class="jo">
+          <div class="rotulo" id="labelO">Jogador O</div>
+          <div class="valor" id="scoreO">0</div>
+        </div>
+      </div>
+
+      <!-- UI-08 -->
+      <div id="status">Vez do Jogador X</div>
+
+      <!-- UI-09 / UI-10 -->
+      <div class="board-wrap">
+        <div id="board"></div>
+        <div class="linha-vitoria" id="linhaVitoria"></div>
+      </div>
+
+      <!-- UI-11 -->
+      <button id="btnReiniciar" type="button">Reiniciar Jogo</button>
+    </div>
+
+    <footer>Desenvolvido para a comunidade acadêmica da UNIFOR</footer>
+  </main>
+
+  <canvas id="confettiCanvas"></canvas>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     18. DICIONÁRIO DE DADOS / ESTADO
+  ============================================================ */
+  let options = Array(9).fill('');   // estado lógico das 9 posições
+  let currentPlayer = 'X';
+  let running = true;                // tabuleiro ativo para cliques
+  let winsX = 0;
+  let winsO = 0;
+  let currentRound = 1;
+  let modeSelect = 'pvp';            // 'pvp' | 'cpu'
+  let formatSelect = 'single';       // 'single' | 'bo3'
+
+  const winPatterns = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
+
+  let cpuTimer = null;
+  let roundTimer = null;
+
+  /* ============================================================
+     DOM
+  ============================================================ */
+  const boardEl      = document.getElementById('board');
+  const statusEl      = document.getElementById('status');
+  const scoreXEl       = document.getElementById('scoreX');
+  const scoreOEl       = document.getElementById('scoreO');
+  const roundLabelEl   = document.getElementById('roundLabel');
+  const labelOEl       = document.getElementById('labelO');
+  const linhaVitoriaEl = document.getElementById('linhaVitoria');
+  const modeSelectEl   = document.getElementById('modeSelect');
+  const formatSelectEl = document.getElementById('formatSelect');
+  const btnReiniciar   = document.getElementById('btnReiniciar');
+
+  /* ============================================================
+     ÁUDIO — RF-04: síntese via Web Audio API (zero arquivos)
+  ============================================================ */
+  let audioCtx = null;
+  function ensureAudio(){
+    if(!audioCtx){
+      const AC = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AC();
+    }
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  function tone(freq, start, duration, type, peak){
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + start);
+    gain.gain.setValueAtTime(0.0001, audioCtx.currentTime + start);
+    gain.gain.exponentialRampToValueAtTime(peak || 0.18, audioCtx.currentTime + start + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + start + duration);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(audioCtx.currentTime + start);
+    osc.stop(audioCtx.currentTime + start + duration + 0.02);
+  }
+  function playSomX(){ if(audioCtx) tone(440, 0, 0.09, 'triangle', 0.16); }
+  function playSomO(){ if(audioCtx) tone(349.23, 0, 0.09, 'triangle', 0.16); }
+  function playSomVitoria(){
+    if(!audioCtx) return;
+    [523.25,659.25,783.99,1046.5].forEach((f,i)=> tone(f, i*0.1, 0.22, 'triangle', 0.17));
+  }
+  function playSomEmpate(){
+    if(!audioCtx) return;
+    tone(320, 0, 0.18, 'sawtooth', 0.12);
+    tone(230, 0.14, 0.26, 'sawtooth', 0.1);
+    tone(160, 0.28, 0.3, 'sawtooth', 0.09);
+  }
+  function playSomCampeao(){
+    if(!audioCtx) return;
+    [392,523.25,659.25,783.99,1046.5,1318.5].forEach((f,i)=> tone(f, i*0.09, 0.25, 'triangle', 0.18));
+  }
+
+  /* ============================================================
+     CONFETES — A1.3
+  ============================================================ */
+  const confettiCanvas = document.getElementById('confettiCanvas');
+  const ctx = confettiCanvas.getContext('2d');
+  let particles = [];
+  let confettiRAF = null;
+  function resizeCanvas(){
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  const CORES_CONFETE = ['#003366','#0056b3','#d97706','#16a34a','#ffffff'];
+
+  function launchConfetti(n){
+    for(let i=0;i<(n||140);i++){
+      particles.push({
+        x: Math.random()*confettiCanvas.width,
+        y: -20 - Math.random()*200,
+        vx: (Math.random()-0.5)*2.4,
+        vy: 2 + Math.random()*3.2,
+        size: 6 + Math.random()*7,
+        color: CORES_CONFETE[Math.floor(Math.random()*CORES_CONFETE.length)],
+        rot: Math.random()*360,
+        vrot: (Math.random()-0.5)*10,
+        shape: Math.random() > 0.5 ? 'rect' : 'circle',
+        life: 0,
+        maxLife: 260 + Math.random()*80
+      });
+    }
+    if(!confettiRAF) animateConfetti();
+  }
+  function animateConfetti(){
+    ctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+    particles.forEach(p=>{
+      p.x += p.vx; p.y += p.vy; p.vy += 0.03; p.rot += p.vrot; p.life++;
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = Math.max(0, 1 - p.life/p.maxLife);
+      if(p.shape==='rect') ctx.fillRect(-p.size/2,-p.size/3,p.size,p.size*0.6);
+      else { ctx.beginPath(); ctx.arc(0,0,p.size/2,0,Math.PI*2); ctx.fill(); }
+      ctx.restore();
+    });
+    particles = particles.filter(p => p.life < p.maxLife && p.y < confettiCanvas.height + 40);
+    if(particles.length>0) confettiRAF = requestAnimationFrame(animateConfetti);
+    else { ctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height); confettiRAF = null; }
+  }
+
+  /* ============================================================
+     P2 — CONSTRUÇÃO DO TABULEIRO (UI-09)
+  ============================================================ */
+  function buildBoard(){
+    boardEl.innerHTML = '';
+    for(let i=0;i<9;i++){
+      const cel = document.createElement('div');
+      cel.className = 'celula vazia';
+      cel.dataset.index = i;
+      cel.setAttribute('role','button');
+      cel.setAttribute('tabindex','0');
+      cel.setAttribute('aria-label','Célula '+(i+1));
+      cel.addEventListener('click', ()=> handleCellClick(i));
+      cel.addEventListener('keydown', (e)=>{
+        if(e.key==='Enter' || e.key===' '){ e.preventDefault(); handleCellClick(i); }
+      });
+      boardEl.appendChild(cel);
+    }
+  }
+  buildBoard();
+
+  function renderCell(i){
+    const cel = boardEl.children[i];
+    const val = options[i];
+    cel.classList.remove('vazia');
+    cel.classList.add(val==='X' ? 'x' : 'o');
+    cel.innerHTML = '<span>'+val+'</span>';
+  }
+
+  /* ============================================================
+     P3/P4 — JOGADA DO JOGADOR  (CA-02, CA-03)
+  ============================================================ */
+  function handleCellClick(i){
+    if(!running) return;                 // CA-03: bloqueado após fim de rodada
+    if(options[i] !== '') return;        // CA-02: célula já ocupada
+    if(modeSelect === 'cpu' && currentPlayer === 'O') return; // vez da CPU
+
+    ensureAudio();
+    placeMark(i, currentPlayer);
+  }
+
+  function placeMark(i, player){
+    options[i] = player;                 // P4.1
+    renderCell(i);
+    if(player === 'X') playSomX(); else playSomO(); // P4.2
+
+    const combo = getWinningCombo(options, player);  // P4.3
+    if(combo){ handleWin(player, combo); return; }    // -> A1
+    if(options.every(v => v !== '')){ handleDraw(); return; } // -> E1
+
+    // P5/P6 — alterna turno
+    currentPlayer = (player === 'X') ? 'O' : 'X';
+    updateStatus();
+
+    // A2 — jogada automática da CPU
+    if(modeSelect === 'cpu' && currentPlayer === 'O' && running){
+      boardEl.classList.add('pensando');       // A2.2 bloqueia cliques
+      cpuTimer = setTimeout(cpuMove, 400);      // A2.3 (400ms)
+    }
+  }
+
+  function cpuMove(){                          // A2.4 / A2.5
+    if(!running) return;
+    boardEl.classList.remove('pensando');
+    const idx = bestCpuMove(options);
+    if(idx === null || idx === undefined) return;
+    placeMark(idx, 'O');
+  }
+
+  function updateStatus(){
+    if(!running) return;
+    if(modeSelect === 'cpu' && currentPlayer === 'O'){
+      statusEl.textContent = 'Vez do Computador (O)...';
+    } else {
+      statusEl.textContent = 'Vez do Jogador ' + currentPlayer;
+    }
+    statusEl.className = '';
+  }
+
+  /* ============================================================
+     A1 — FIM DE RODADA POR VITÓRIA (CA-05, CA-06)
+  ============================================================ */
+  function handleWin(winner, combo){
+    running = false;                             // CA-03
+    boardEl.classList.add('bloqueado');
+    boardEl.classList.remove('pensando');
+    clearTimeout(cpuTimer);
+
+    drawWinLine(combo);                          // A1.2 (CA-06)
+    combo.forEach(i => boardEl.children[i].classList.add('vencedora'));
+    launchConfetti(140);                         // A1.3
+    playSomVitoria();                            // A1.4
+
+    if(winner === 'X') winsX++; else winsO++;    // A1.5
+    updateScoreboard();
+
+    statusEl.textContent = 'Jogador ' + winner + ' venceu a rodada!'; // A1.6
+    statusEl.className = 'venceu';
+
+    if(formatSelect === 'bo3'){                  // A1.7 — regra MD3 (CA-05)
+      if(winsX >= 2 || winsO >= 2){
+        declararCampeao(winsX >= 2 ? 'X' : 'O'); // A1.7.1
+      } else if(currentRound < 3){
+        currentRound++;                          // A1.7.2
+        updateScoreboard();
+        roundTimer = setTimeout(iniciarNovaRodada, 2000);
+      } else {
+        // fim da 3ª rodada sem 2 vitórias: decide por placar (CA-05)
+        finalizarPorPlacar();
+      }
+    }
+    // A1.8 — partida única: encerra, aguarda reinício manual
+  }
+
+  /* ============================================================
+     E1 — FIM DE RODADA POR EMPATE (CA-05)
+  ============================================================ */
+  function handleDraw(){
+    running = false;                             // CA-03
+    boardEl.classList.add('bloqueado');
+    boardEl.classList.remove('pensando');
+    clearTimeout(cpuTimer);
+
+    playSomEmpate();                              // E1.2
+    statusEl.textContent = 'Rodada Empatada!';    // E1.3
+    statusEl.className = 'empate';
+
+    if(formatSelect === 'bo3'){
+      if(currentRound < 3){
+        // E1.4 — NÃO incrementa a rodada, apenas reinicia
+        roundTimer = setTimeout(iniciarNovaRodada, 2000);
+      } else {
+        finalizarPorPlacar();
+      }
+    }
+    // partida única: encerra, aguarda reinício manual
+  }
+
+  function finalizarPorPlacar(){
+    if(winsX > winsO) declararCampeao('X');
+    else if(winsO > winsX) declararCampeao('O');
+    else {
+      statusEl.textContent = 'Partida encerrada em empate (' + winsX + ' x ' + winsO + ')!';
+      statusEl.className = 'empate';
+    }
+  }
+
+  function declararCampeao(vencedor){
+    statusEl.textContent = '🏆 Jogador ' + vencedor + ' é o campeão da partida!';
+    statusEl.className = 'venceu';
+    playSomCampeao();
+    setTimeout(()=> launchConfetti(90), 250);
+  }
+
+  /* ============================================================
+     Transição entre rodadas (MD3)
+  ============================================================ */
+  function iniciarNovaRodada(){
+    options = Array(9).fill('');
+    currentPlayer = 'X';
+    running = true;
+    buildBoard();
+    linhaVitoriaEl.classList.remove('show');
+    linhaVitoriaEl.style.width = '0px';
+    boardEl.classList.remove('bloqueado','pensando');
+    updateStatus();
+    updateScoreboard();
+  }
+
+  /* ============================================================
+     A3 — REINÍCIO GERAL (CA-03 reset / botão ou troca de seletor)
+  ============================================================ */
+  function resetAll(){
+    clearTimeout(cpuTimer);
+    clearTimeout(roundTimer);
+    winsX = 0;
+    winsO = 0;
+    currentRound = 1;
+    options = Array(9).fill('');
+    currentPlayer = 'X';
+    running = true;
+    buildBoard();
+    linhaVitoriaEl.classList.remove('show');
+    linhaVitoriaEl.style.width = '0px';
+    boardEl.classList.remove('bloqueado','pensando');
+    labelOEl.textContent = (modeSelect === 'cpu') ? 'Computador (O)' : 'Jogador O';
+    updateStatus();
+    updateScoreboard();
+  }
+
+  btnReiniciar.addEventListener('click', ()=>{ ensureAudio(); resetAll(); });
+  modeSelectEl.addEventListener('change', (e)=>{
+    ensureAudio();
+    modeSelect = e.target.value;
+    resetAll();
+  });
+  formatSelectEl.addEventListener('change', (e)=>{
+    ensureAudio();
+    formatSelect = e.target.value;
+    resetAll();
+  });
+
+  function updateScoreboard(){
+    scoreXEl.textContent = winsX;
+    scoreOEl.textContent = winsO;
+    const total = (formatSelect === 'bo3') ? 3 : 1;
+    roundLabelEl.textContent = Math.min(currentRound, total) + '/' + total;
+  }
+
+  /* ============================================================
+     REGRAS DE VITÓRIA — RF-05
+  ============================================================ */
+  function getWinningCombo(arr, player){
+    for(const combo of winPatterns){
+      if(combo.every(i => arr[i] === player)) return combo;
+    }
+    return null;
+  }
+
+  // UI-10 — traça a linha exatamente sobre as 3 células vitoriosas (CA-06)
+  function drawWinLine(combo){
+    const primeira = boardEl.children[combo[0]];
+    const ultima   = boardEl.children[combo[2]];
+    const boardRect = boardEl.getBoundingClientRect();
+    const r1 = primeira.getBoundingClientRect();
+    const r2 = ultima.getBoundingClientRect();
+
+    const x1 = r1.left - boardRect.left + r1.width/2;
+    const y1 = r1.top  - boardRect.top  + r1.height/2;
+    const x2 = r2.left - boardRect.left + r2.width/2;
+    const y2 = r2.top  - boardRect.top  + r2.height/2;
+
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const length = Math.sqrt(dx*dx + dy*dy) + 14;
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+    linhaVitoriaEl.style.width = length + 'px';
+    linhaVitoriaEl.style.left = (x1 - 7) + 'px';
+    linhaVitoriaEl.style.top = (y1 - 3.5) + 'px';
+    linhaVitoriaEl.style.transform = 'rotate(' + angle + 'deg) scaleX(0)';
+    // força reflow para reiniciar a transição
+    void linhaVitoriaEl.offsetWidth;
+    linhaVitoriaEl.style.transform = 'rotate(' + angle + 'deg) scaleX(1)';
+    linhaVitoriaEl.classList.add('show');
+  }
+
+  /* ============================================================
+     A2 — IA da CPU (minimax, jogada ótima)
+  ============================================================ */
+  function vaziosDe(arr){
+    const out = [];
+    for(let i=0;i<9;i++) if(arr[i] === '') out.push(i);
+    return out;
+  }
+  function minimax(arr, depth, isMax){
+    if(getWinningCombo(arr,'O')) return 10 - depth;
+    if(getWinningCombo(arr,'X')) return depth - 10;
+    if(vaziosDe(arr).length === 0) return 0;
+    if(isMax){
+      let best = -Infinity;
+      for(const i of vaziosDe(arr)){
+        arr[i]='O'; best = Math.max(best, minimax(arr, depth+1, false)); arr[i]='';
+      }
+      return best;
+    } else {
+      let best = Infinity;
+      for(const i of vaziosDe(arr)){
+        arr[i]='X'; best = Math.min(best, minimax(arr, depth+1, true)); arr[i]='';
+      }
+      return best;
+    }
+  }
+  function bestCpuMove(arr){
+    let bestScore = -Infinity;
+    let candidatos = [];
+    for(const i of vaziosDe(arr)){
+      arr[i]='O';
+      const score = minimax(arr, 0, false);
+      arr[i]='';
+      if(score > bestScore){ bestScore = score; candidatos = [i]; }
+      else if(score === bestScore){ candidatos.push(i); }
+    }
+    if(candidatos.length===0) return null;
+    return candidatos[Math.floor(Math.random()*candidatos.length)];
+  }
+
+  /* ============================================================
+     ESTADO INICIAL (P2)
+  ============================================================ */
+  updateStatus();
+  updateScoreboard();
+
+})();
+</script>
+</body>
+</html>
