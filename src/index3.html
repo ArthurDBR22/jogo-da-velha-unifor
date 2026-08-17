@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo da Velha - Universidade de Fortaleza</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Canvas para o Efeito de Confetes (Laterais) -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="container">
+    <header class="header-unifor">
+      <span class="institution-name">UNIVERSIDADE DE FORTALEZA</span>
+      <h1>Jogo da Velha</h1>
+    </header>
+
+    <!-- Seletores de Configuração (Modo e Formato) -->
+    <div class="game-settings">
+      <div class="setting-group">
+        <label for="opponent-mode">Modo de Jogo:</label>
+        <select id="opponent-mode" class="select-input">
+          <option value="pvp">Jogador vs Jogador</option>
+          <option value="pvc">Jogador vs CPU</option>
+        </select>
+      </div>
+
+      <div class="setting-group">
+        <label for="match-format">Formato:</label>
+        <select id="match-format" class="select-input">
+          <option value="normal">Partida Única</option>
+          <option value="md3">Melhor de 3 (MD3)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Placar Principal -->
+    <div class="scoreboard">
+      <div class="score-box x-box">
+        <span class="label" id="label-x">Jogador X</span>
+        <span id="score-x" class="score">0</span>
+      </div>
+      <div class="score-box draw-box">
+        <span class="label">Empates</span>
+        <span id="score-draws" class="score">0</span>
+      </div>
+      <div class="score-box o-box">
+        <span class="label" id="label-o">Jogador O</span>
+        <span id="score-o" class="score">0</span>
+      </div>
+    </div>
+
+    <!-- Indicador da Série MD3 -->
+    <div id="md3-tracker" class="md3-tracker hidden">
+      <span>Placar da Série (MD3):</span>
+      <div class="md3-badges">
+        <span id="md3-x">X: 0</span>
+        <span id="md3-o">O: 0</span>
+      </div>
+    </div>
+
+    <!-- Status do Turno / Processamento da CPU -->
+    <div id="status" class="status">Vez do Jogador: <span id="current-player">X</span></div>
+
+    <!-- Wrapper do Tabuleiro com Camada SVG para a Linha Verde -->
+    <div class="board-wrapper">
+      <svg id="winning-line-svg" class="winning-line-svg">
+        <line id="winning-line" x1="0" y1="0" x2="0" y2="0" />
+      </svg>
+      
+      <div class="board" id="board">
+        <button class="cell" data-index="0" aria-label="Célula 1"></button>
+        <button class="cell" data-index="1" aria-label="Célula 2"></button>
+        <button class="cell" data-index="2" aria-label="Célula 3"></button>
+        <button class="cell" data-index="3" aria-label="Célula 4"></button>
+        <button class="cell" data-index="4" aria-label="Célula 5"></button>
+        <button class="cell" data-index="5" aria-label="Célula 6"></button>
+        <button class="cell" data-index="6" aria-label="Célula 7"></button>
+        <button class="cell" data-index="7" aria-label="Célula 8"></button>
+        <button class="cell" data-index="8" aria-label="Célula 9"></button>
+      </div>
+    </div>
+
+    <!-- Controles -->
+    <div class="controls">
+      <button id="btn-restart" class="btn btn-primary">Nova Rodada</button>
+      <button id="btn-reset-score" class="btn btn-secondary">Zerar Tudo</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
