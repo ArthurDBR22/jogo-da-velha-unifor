@@ -24,7 +24,7 @@ ele está muito na centralizado, seria mais interessante se ele se espalhasse ma
 
 basicamente esse foi o prompt utilizado no primeiro jogo da velha
 
-
+---
 
 No segundo jogo foi utilizado o claude.ai
 
@@ -33,6 +33,30 @@ o prompt foi esse a seguir: "Faça um Jogo da Velha em ambiente web que atenda o
 o novo prompt foi o mesmo do anterior, só que foi mandado com todos os requisitos fornecidos
 
 Após o teste, foi feito de maneira que atendeu todos os requisitos
+
+---
+
+No terceiro jogo, novamente, foi utilizado o Gemini. Entretanto, diferente do primeiro jogo, o pedido foi extendido.
+
+O prompt foi esse: "Estou fazendo um trabalho em grupo de Requisitos e Modelagem de Sistemas. O trabalho consiste em um jogo da velha na linguagem JavaScript + CSS + HTML baseado nos requisitos que ele passou no repositório do GitHub dele. Para fazer esse trabalho, a IA é responsável por fazer esse trabalho e eu ver como ela se sairá, além de fazer ajustes se ela fizer algo que não foi pedido ou colocar algo a mais do que foi escrito no repositório. Poderia ler o repositório público e verificar o que se pede, além de fazer o código do trabalho para eu ver se está tudo nos conformes? Lembrando que o que estiver faltando irei pedir para implementar depois no código. Aviso: essa conversa será reutilizada para no arquivo RELATORIO_PROMPTS.md.
+Link do repositório: *CDU disponibilizado pelo professor*"
+
+Foi feito o teste do jogo e o jogo mostrou a falta de alguns objetivos presentes no CDU:
+1. Falta do modo "Contra a CPU" e do formato MD3(melhor de três)
+2. A falta da linha de vitória do jogador e os confetes de comemoração
+
+Depois disso, pedi que a IA ajeitasse alguns fatores presentes nos objetivos
+O prompt foi esse: "Até agora, você fez tudo certo para uma aplicação simples, mas falta algumas coisas dos objetivos que não foram colocados nessa aplicação que devem ser feitos por você e ditos por mim. Vamos fazer os objetivos por partes. Por agora, adicione um modo de jogo chamado MD3(popularmente chamado melhor de 3); substitua as cores do bloco do jogador vencedor por uma cor da paleta da UNIFOR e adicione uma linha verde por cima da parte do jogador vencedor da rodada com a cor anterior das caixas, com efeitos visuais; por fim, adicione a partir desse parte os efeitos sonoros de todas as funções do jogo(como cliques e música da vitória), para o jogo não ficar silencioso e monótono." 
+
+Foi feito mais um teste e a aplicação precisava dos últimos fatores restantes da CDU:
+1. O modo "Contra a CPU"
+2. Os confetes de comemoração do jogador vencedor
+
+Foi feito o último prompt, propondo os detalhes restantes e finais do projeto:
+O prompt foi esse: "Agora podemos ver a grande diferença comparada com o primeiro protótipo feito aqui, mas ainda falta alguns objetivos que precisam ser concluídos antes dos detalhes finais. Nessa parte, adicione o modo de jogo que será chamado contra o computador(CPU) e altere os modos de jogo anteriores para "formatos de partida", mantendo a lógica do jogo intacta; adicione um efeito de confetes na vitória do jogador daquela rodada, com a paleta de cores dos desenhos do tabuleiro(azul para o X e vermelho para o O)."
+
+Foi feito o último teste do jogo e ele está pronto no index3.html.
+
 
 
 ## Checklist de Critérios de Aceite (Implementação)
