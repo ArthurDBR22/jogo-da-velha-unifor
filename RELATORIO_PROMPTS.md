@@ -57,7 +57,7 @@ O prompt foi esse: "Agora podemos ver a grande diferença comparada com o primei
 
 Foi feito o último teste do jogo e ele está pronto no index3.html.
 
-
+---
 
 ## Checklist de Critérios de Aceite (Implementação)
 
