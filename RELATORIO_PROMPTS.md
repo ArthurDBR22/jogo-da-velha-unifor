@@ -32,7 +32,11 @@ o prompt foi esse a seguir: "Faça um Jogo da Velha em ambiente web que atenda o
 
 o novo prompt foi o mesmo do anterior, só que foi mandado com todos os requisitos fornecidos
 
-Após o teste, foi feito de maneira que atendeu todos os requisitos
+Após o teste, foi encontrado um erro na Melhor de 3, onde os empates não estavam constando no passar das rodadas
+
+O ultimo prompt foi para ela corrigir esse erro
+
+Após o ultimo teste, foi cumprido todos os requisitos
 
 ---
 
