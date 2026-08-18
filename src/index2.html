@@ -542,14 +542,9 @@
 
     if(formatSelect === 'bo3'){                  // A1.7 — regra MD3 (CA-05)
       if(winsX >= 2 || winsO >= 2){
-        declararCampeao(winsX >= 2 ? 'X' : 'O'); // A1.7.1
-      } else if(currentRound < 3){
-        currentRound++;                          // A1.7.2
-        updateScoreboard();
-        roundTimer = setTimeout(iniciarNovaRodada, 2000);
+        declararCampeao(winsX >= 2 ? 'X' : 'O'); // A1.7.1 — 2 vitórias encerra na hora
       } else {
-        // fim da 3ª rodada sem 2 vitórias: decide por placar (CA-05)
-        finalizarPorPlacar();
+        avancarRodadaMD3();                      // conta esta rodada e segue/encerra em 3
       }
     }
     // A1.8 — partida única: encerra, aguarda reinício manual
@@ -569,14 +564,22 @@
     statusEl.className = 'empate';
 
     if(formatSelect === 'bo3'){
-      if(currentRound < 3){
-        // E1.4 — NÃO incrementa a rodada, apenas reinicia
-        roundTimer = setTimeout(iniciarNovaRodada, 2000);
-      } else {
-        finalizarPorPlacar();
-      }
+      // Empate também conta como rodada jogada: MD3 tem sempre no máximo 3 rodadas no total
+      avancarRodadaMD3();
     }
     // partida única: encerra, aguarda reinício manual
+  }
+
+  // Conta a rodada que acabou de ser disputada (vitória OU empate) e decide
+  // se a partida MD3 encerra (ao completar 3 rodadas) ou segue para a próxima.
+  function avancarRodadaMD3(){
+    if(currentRound >= 3){
+      finalizarPorPlacar();
+    } else {
+      currentRound++;
+      updateScoreboard();
+      roundTimer = setTimeout(iniciarNovaRodada, 2000);
+    }
   }
 
   function finalizarPorPlacar(){
