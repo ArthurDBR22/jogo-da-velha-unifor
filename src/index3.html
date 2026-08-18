@@ -4,10 +4,304 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jogo da Velha - Universidade de Fortaleza</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary-color: #003366;
+      --secondary-color: #0056b3;
+      --bg-color: #f0f4f8;
+      --card-bg: #ffffff;
+      --text-color: #1e293b;
+      --player-x-color: #2563eb;
+      --player-o-color: #dc2626;
+      --border-color: #cbd5e1;
+      --winning-line-green: #22c55e;
+      --winning-line-glow: #16a34a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    .container {
+      background-color: var(--card-bg);
+      padding: 28px;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(0, 51, 102, 0.15);
+      max-width: 450px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      border: 1px solid rgba(0, 51, 102, 0.1);
+    }
+
+    .header-unifor {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .institution-name {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--secondary-color);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .header-unifor h1 {
+      font-size: 1.85rem;
+      color: var(--primary-color);
+      font-weight: 800;
+    }
+
+    .game-settings {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 16px;
+      background-color: #f8fafc;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+    }
+
+    .setting-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      flex: 1;
+    }
+
+    .setting-group label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 4px;
+    }
+
+    .select-input {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1.5px solid var(--secondary-color);
+      background-color: #fff;
+      color: var(--primary-color);
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .select-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
+    .scoreboard {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      background-color: #f8fafc;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+    }
+
+    .score-box {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .score-box .label {
+      font-size: 0.8rem;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .score-box .score {
+      font-size: 1.35rem;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+
+    .md3-tracker {
+      background-color: #eff6ff;
+      border: 1px solid var(--secondary-color);
+      color: var(--primary-color);
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .md3-tracker.hidden {
+      display: none;
+    }
+
+    .md3-badges {
+      display: flex;
+      gap: 10px;
+    }
+
+    .status {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      min-height: 1.6em;
+      color: var(--primary-color);
+    }
+
+    .thinking-text {
+      color: var(--secondary-color);
+      font-style: italic;
+    }
+
+    .board-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      margin-bottom: 22px;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      width: 100%;
+      height: 100%;
+    }
+
+    .cell {
+      background-color: #ffffff;
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 2.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      user-select: none;
+    }
+
+    .cell:hover:not(:disabled) {
+      background-color: #f1f5f9;
+      border-color: var(--secondary-color);
+    }
+
+    .cell.x {
+      color: var(--player-x-color);
+    }
+
+    .cell.o {
+      color: var(--player-o-color);
+    }
+
+    .cell.winner {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
+      color: #ffffff !important;
+      border-color: var(--secondary-color) !important;
+      box-shadow: 0 4px 12px rgba(0, 51, 102, 0.4);
+    }
+
+    .winning-line-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    #winning-line {
+      stroke: var(--winning-line-green);
+      stroke-width: 8;
+      stroke-linecap: round;
+      filter: drop-shadow(0 0 6px var(--winning-line-glow));
+      transition: stroke-dashoffset 0.4s ease-out;
+      stroke-dasharray: 500;
+      stroke-dashoffset: 500;
+    }
+
+    #winning-line.draw-line {
+      stroke-dashoffset: 0;
+    }
+
+    .cell:disabled {
+      cursor: not-allowed;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, background-color 0.2s;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .btn-secondary {
+      background-color: #64748b;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #475569;
+    }
+  </style>
 </head>
 <body>
-  <!-- Canvas para o Efeito de Confetes (Laterais) -->
   <canvas id="confetti-canvas"></canvas>
 
   <div class="container">
@@ -16,7 +310,6 @@
       <h1>Jogo da Velha</h1>
     </header>
 
-    <!-- Seletores de Configuração (Modo e Formato) -->
     <div class="game-settings">
       <div class="setting-group">
         <label for="opponent-mode">Modo de Jogo:</label>
@@ -35,7 +328,6 @@
       </div>
     </div>
 
-    <!-- Placar Principal -->
     <div class="scoreboard">
       <div class="score-box x-box">
         <span class="label" id="label-x">Jogador X</span>
@@ -51,7 +343,6 @@
       </div>
     </div>
 
-    <!-- Indicador da Série MD3 -->
     <div id="md3-tracker" class="md3-tracker hidden">
       <span>Placar da Série (MD3):</span>
       <div class="md3-badges">
@@ -60,10 +351,8 @@
       </div>
     </div>
 
-    <!-- Status do Turno / Processamento da CPU -->
     <div id="status" class="status">Vez do Jogador: <span id="current-player">X</span></div>
 
-    <!-- Wrapper do Tabuleiro com Camada SVG para a Linha Verde -->
     <div class="board-wrapper">
       <svg id="winning-line-svg" class="winning-line-svg">
         <line id="winning-line" x1="0" y1="0" x2="0" y2="0" />
@@ -82,13 +371,482 @@
       </div>
     </div>
 
-    <!-- Controles -->
     <div class="controls">
       <button id="btn-restart" class="btn btn-primary">Nova Rodada</button>
       <button id="btn-reset-score" class="btn btn-secondary">Zerar Tudo</button>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    class SoundEffects {
+      constructor() {
+        this.ctx = null;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playTone(freq, type, duration, gainValue = 0.1) {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(gainValue, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+      }
+
+      playClick(player) {
+        const freq = player === 'X' ? 520 : 420;
+        this.playTone(freq, 'sine', 0.1, 0.15);
+      }
+
+      playButton() {
+        this.playTone(300, 'triangle', 0.08, 0.1);
+      }
+
+      playWinRound() {
+        this.init();
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, i) => {
+          setTimeout(() => {
+            this.playTone(freq, 'sine', 0.25, 0.2);
+          }, i * 100);
+        });
+      }
+
+      playWinMD3() {
+        this.init();
+        const notes = [440, 554.37, 659.25, 880, 783.99, 880];
+        notes.forEach((freq, i) => {
+          setTimeout(() => {
+            this.playTone(freq, 'triangle', 0.35, 0.25);
+          }, i * 120);
+        });
+      }
+
+      playDraw() {
+        this.init();
+        const notes = [400, 350, 300, 250];
+        notes.forEach((freq, i) => {
+          setTimeout(() => {
+            this.playTone(freq, 'sawtooth', 0.18, 0.08);
+          }, i * 90);
+        });
+      }
+    }
+
+    const sfx = new SoundEffects();
+
+    class ConfettiEffect {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.particles = [];
+        this.animating = false;
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+      }
+
+      resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+
+      trigger(winnerPlayer) {
+        const colors = winnerPlayer === 'X'
+          ? ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#1d4ed8']
+          : ['#dc2626', '#ef4444', '#f87171', '#fca5a5', '#b91c1c'];
+
+        this.particles = [];
+        const particleCount = 100;
+
+        for (let i = 0; i < particleCount; i++) {
+          const isLeft = i % 2 === 0;
+          const spawnX = isLeft 
+            ? Math.random() * (this.canvas.width * 0.22) 
+            : this.canvas.width - Math.random() * (this.canvas.width * 0.22);
+
+          this.particles.push({
+            x: spawnX,
+            y: Math.random() * (this.canvas.height * 0.5),
+            vx: isLeft ? Math.random() * 5 + 1 : (Math.random() * 5 + 1) * -1,
+            vy: Math.random() * -6 - 2,
+            size: Math.random() * 8 + 6,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * 360,
+            rotationSpeed: (Math.random() - 0.5) * 10,
+            opacity: 1
+          });
+        }
+
+        if (!this.animating) {
+          this.animating = true;
+          this.animate();
+        }
+      }
+
+      animate() {
+        if (this.particles.length === 0) {
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+          this.animating = false;
+          return;
+        }
+
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const p = this.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.25;
+          p.rotation += p.rotationSpeed;
+          p.opacity -= 0.007;
+
+          if (p.opacity <= 0 || p.y > this.canvas.height) {
+            this.particles.splice(i, 1);
+            continue;
+          }
+
+          this.ctx.save();
+          this.ctx.translate(p.x, p.y);
+          this.ctx.rotate((p.rotation * Math.PI) / 180);
+          this.ctx.globalAlpha = Math.max(0, p.opacity);
+          this.ctx.fillStyle = p.color;
+          this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          this.ctx.restore();
+        }
+
+        requestAnimationFrame(() => this.animate());
+      }
+    }
+
+    const state = {
+      board: Array(9).fill(""),
+      currentPlayer: "X",
+      gameActive: true,
+      isCpuThinking: false,
+      opponent: "pvp",
+      matchFormat: "normal",
+      scores: { X: 0, O: 0, draws: 0 },
+      md3Scores: { X: 0, O: 0 }
+    };
+
+    const WINNING_COMBINATIONS = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]
+    ];
+
+    const LINE_COORDINATES = [
+      { x1: 5, y1: 16.6, x2: 95, y2: 16.6 },
+      { x1: 5, y1: 50,   x2: 95, y2: 50 },
+      { x1: 5, y1: 83.3, x2: 95, y2: 83.3 },
+      { x1: 16.6, y1: 5, x2: 16.6, y2: 95 },
+      { x1: 50,   y1: 5, x2: 50,   y2: 95 },
+      { x1: 83.3, y1: 5, x2: 83.3, y2: 95 },
+      { x1: 5, y1: 5,   x2: 95, y2: 95 },
+      { x1: 95, y1: 5,  x2: 5,  y2: 95 }
+    ];
+
+    const elements = {
+      cells: document.querySelectorAll(".cell"),
+      status: document.getElementById("status"),
+      scoreX: document.getElementById("score-x"),
+      scoreO: document.getElementById("score-o"),
+      scoreDraws: document.getElementById("score-draws"),
+      labelO: document.getElementById("label-o"),
+      md3Tracker: document.getElementById("md3-tracker"),
+      md3X: document.getElementById("md3-x"),
+      md3O: document.getElementById("md3-o"),
+      opponentModeSelect: document.getElementById("opponent-mode"),
+      matchFormatSelect: document.getElementById("match-format"),
+      btnRestart: document.getElementById("btn-restart"),
+      btnResetScore: document.getElementById("btn-reset-score"),
+      winningLineSVG: document.getElementById("winning-line-svg"),
+      winningLine: document.getElementById("winning-line"),
+      confettiCanvas: document.getElementById("confetti-canvas")
+    };
+
+    const confetti = new ConfettiEffect(elements.confettiCanvas);
+
+    function init() {
+      elements.cells.forEach(cell => cell.addEventListener("click", handleCellClick));
+      elements.btnRestart.addEventListener("click", () => {
+        sfx.playButton();
+        restartGame();
+      });
+      elements.btnResetScore.addEventListener("click", () => {
+        sfx.playButton();
+        resetScore();
+      });
+      
+      elements.opponentModeSelect.addEventListener("change", (e) => {
+        sfx.playButton();
+        state.opponent = e.target.value;
+        elements.labelO.textContent = state.opponent === "pvc" ? "CPU (O)" : "Jogador O";
+        resetScore();
+      });
+
+      elements.matchFormatSelect.addEventListener("change", (e) => {
+        sfx.playButton();
+        state.matchFormat = e.target.value;
+        if (state.matchFormat === "md3") {
+          elements.md3Tracker.classList.remove("hidden");
+        } else {
+          elements.md3Tracker.classList.add("hidden");
+        }
+        resetScore();
+      });
+
+      updateStatusUI();
+    }
+
+    function handleCellClick(event) {
+      const cell = event.target;
+      const index = parseInt(cell.getAttribute("data-index"));
+
+      if (state.board[index] !== "" || !state.gameActive || state.isCpuThinking) return;
+
+      sfx.playClick(state.currentPlayer);
+      executeMove(cell, index);
+      checkResult();
+    }
+
+    function executeMove(cell, index) {
+      state.board[index] = state.currentPlayer;
+      cell.textContent = state.currentPlayer;
+      cell.classList.add(state.currentPlayer.toLowerCase());
+      cell.disabled = true;
+    }
+
+    function triggerCPUMove() {
+      if (!state.gameActive || state.currentPlayer !== "O" || state.opponent !== "pvc") return;
+
+      state.isCpuThinking = true;
+      elements.status.innerHTML = `<span class="thinking-text">Computador processando a jogada...</span>`;
+
+      setTimeout(() => {
+        if (!state.gameActive || state.currentPlayer !== "O") return;
+
+        const cpuMoveIndex = calculateBestCPUMove();
+        if (cpuMoveIndex !== -1) {
+          const cell = elements.cells[cpuMoveIndex];
+          sfx.playClick("O");
+          executeMove(cell, cpuMoveIndex);
+          state.isCpuThinking = false;
+          checkResult();
+        }
+      }, 2000);
+    }
+
+    function calculateBestCPUMove() {
+      const emptyIndices = state.board
+        .map((val, idx) => (val === "" ? idx : null))
+        .filter(val => val !== null);
+
+      if (emptyIndices.length === 0) return -1;
+
+      for (let idx of emptyIndices) {
+        state.board[idx] = "O";
+        if (checkWinningCondition("O")) {
+          state.board[idx] = "";
+          return idx;
+        }
+        state.board[idx] = "";
+      }
+
+      for (let idx of emptyIndices) {
+        state.board[idx] = "X";
+        if (checkWinningCondition("X")) {
+          state.board[idx] = "";
+          return idx;
+        }
+        state.board[idx] = "";
+      }
+
+      if (emptyIndices.includes(4)) return 4;
+
+      return emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+    }
+
+    function checkWinningCondition(player) {
+      return WINNING_COMBINATIONS.some(combo => {
+        return combo.every(index => state.board[index] === player);
+      });
+    }
+
+    function checkResult() {
+      let roundWon = false;
+      let winningComboIndex = -1;
+
+      for (let i = 0; i < WINNING_COMBINATIONS.length; i++) {
+        const [a, b, c] = WINNING_COMBINATIONS[i];
+        if (
+          state.board[a] &&
+          state.board[a] === state.board[b] &&
+          state.board[a] === state.board[c]
+        ) {
+          roundWon = true;
+          winningComboIndex = i;
+          break;
+        }
+      }
+
+      if (roundWon) {
+        handleWin(winningComboIndex);
+        return;
+      }
+
+      const isDraw = !state.board.includes("");
+      if (isDraw) {
+        handleDraw();
+        return;
+      }
+
+      switchPlayer();
+
+      if (state.opponent === "pvc" && state.currentPlayer === "O") {
+        triggerCPUMove();
+      }
+    }
+
+    function handleWin(comboIndex) {
+      state.gameActive = false;
+      state.isCpuThinking = false;
+      const winner = state.currentPlayer;
+      const winningLineCoords = LINE_COORDINATES[comboIndex];
+      const winningLineCells = WINNING_COMBINATIONS[comboIndex];
+
+      winningLineCells.forEach(index => {
+        elements.cells[index].classList.add("winner");
+      });
+
+      drawWinningLine(winningLineCoords);
+      confetti.trigger(winner);
+
+      state.scores[winner]++;
+      updateScoreboardUI();
+
+      if (state.matchFormat === "md3") {
+        state.md3Scores[winner]++;
+        updateMD3UI();
+
+        if (state.md3Scores[winner] === 2) {
+          sfx.playWinMD3();
+          const winnerName = (state.opponent === "pvc" && winner === "O") ? "CPU" : `JOGADOR ${winner}`;
+          elements.status.innerHTML = `🏆 <strong>${winnerName} VENCEU A SÉRIE (MD3)!</strong> 🏆`;
+          return;
+        }
+      }
+
+      sfx.playWinRound();
+      const winnerTitle = (state.opponent === "pvc" && winner === "O") ? "CPU" : `Jogador ${winner}`;
+      elements.status.innerHTML = `<strong>${winnerTitle}</strong> venceu a rodada!`;
+    }
+
+    function drawWinningLine(coords) {
+      const svgRect = elements.winningLineSVG.getBoundingClientRect();
+      const w = svgRect.width;
+      const h = svgRect.height;
+
+      const x1 = (coords.x1 / 100) * w;
+      const y1 = (coords.y1 / 100) * h;
+      const x2 = (coords.x2 / 100) * w;
+      const y2 = (coords.y2 / 100) * h;
+
+      elements.winningLine.setAttribute("x1", x1);
+      elements.winningLine.setAttribute("y1", y1);
+      elements.winningLine.setAttribute("x2", x2);
+      elements.winningLine.setAttribute("y2", y2);
+
+      elements.winningLine.classList.add("draw-line");
+    }
+
+    function clearWinningLine() {
+      elements.winningLine.classList.remove("draw-line");
+      elements.winningLine.setAttribute("x1", "0");
+      elements.winningLine.setAttribute("y1", "0");
+      elements.winningLine.setAttribute("x2", "0");
+      elements.winningLine.setAttribute("y2", "0");
+    }
+
+    function handleDraw() {
+      state.gameActive = false;
+      state.isCpuThinking = false;
+      state.scores.draws++;
+      sfx.playDraw();
+      elements.status.textContent = "Empate (Deu Velha)!";
+      updateScoreboardUI();
+    }
+
+    function switchPlayer() {
+      state.currentPlayer = state.currentPlayer === "X" ? "O" : "X";
+      updateStatusUI();
+    }
+
+    function updateStatusUI() {
+      if (state.isCpuThinking) return;
+      const name = (state.opponent === "pvc" && state.currentPlayer === "O") ? "CPU (O)" : `Jogador ${state.currentPlayer}`;
+      elements.status.innerHTML = `Vez do Jogador: <strong>${name}</strong>`;
+    }
+
+    function updateScoreboardUI() {
+      elements.scoreX.textContent = state.scores.X;
+      elements.scoreO.textContent = state.scores.O;
+      elements.scoreDraws.textContent = state.scores.draws;
+    }
+
+    function updateMD3UI() {
+      elements.md3X.textContent = `X: ${state.md3Scores.X}`;
+      elements.md3O.textContent = `O: ${state.md3Scores.O}`;
+    }
+
+    function restartGame() {
+      state.board = Array(9).fill("");
+      state.currentPlayer = "X";
+      state.gameActive = true;
+      state.isCpuThinking = false;
+
+      clearWinningLine();
+
+      elements.cells.forEach(cell => {
+        cell.textContent = "";
+        cell.className = "cell";
+        cell.disabled = false;
+      });
+
+      if (state.matchFormat === "md3" && (state.md3Scores.X === 2 || state.md3Scores.O === 2)) {
+        state.md3Scores = { X: 0, O: 0 };
+        updateMD3UI();
+      }
+
+      updateStatusUI();
+    }
+
+    function resetScore() {
+      state.scores = { X: 0, O: 0, draws: 0 };
+      state.md3Scores = { X: 0, O: 0 };
+      updateScoreboardUI();
+      updateMD3UI();
+      restartGame();
+    }
+
+    init();
+  </script>
 </body>
 </html>
