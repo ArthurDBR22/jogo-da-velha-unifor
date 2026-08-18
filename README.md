@@ -11,10 +11,13 @@ Atividade Prática de requisitos e mod. de sistemas
 
 ## Instruções de execução
 
-
+1. **Salvar o arquivo:** Crie um arquivo chamado `index.html` e cole o código completo nele.
+2. **Executar:** Dê um duplo clique no arquivo `index.html` (ou clique com o botão direito e selecione **Abrir com** $\rightarrow$ seu navegador preferido).
+3. **Jogar:** Escolha o modo de jogo (`2 Jogadores` ou `Contra o Computador`), selecione o formato (`Partida Única` ou `MD3`) e clique nas células do tabuleiro para começar.
 
 
 ---
 
 ## Link dos jogos
 
+https://github.com/ArthurDBR22/jogo-da-velha-unifor/tree/main/src
