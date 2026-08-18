@@ -18,6 +18,6 @@ Atividade Prática de requisitos e mod. de sistemas
 
 ---
 
-## Link dos jogos
+## Link do site 
 
-https://github.com/ArthurDBR22/jogo-da-velha-unifor/tree/main/src
+https://arthurdbr22.github.io/jogo-da-velha-unifor/
