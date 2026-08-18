@@ -20,4 +20,4 @@ Atividade Prática de requisitos e mod. de sistemas
 
 ## Link do site 
 
-https://arthurdbr22.github.io/jogo-da-velha-unifor/
+https://github.com/ArthurDBR22/jogo-da-velha-unifor
